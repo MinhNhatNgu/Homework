@@ -34,6 +34,8 @@ void updateJson (string& deviceData, string& typeData, string& colorData, string
 void viewcart (vector<string>& list);
 void addcart (vector<string>& list);
 void deletecart (vector<string>& list);
+string outQuantity(string& s);
+void orderOut (vector<string>& list);
 
 //main function
 void menu();
@@ -41,6 +43,7 @@ void choose_menu();
 void nhapsp();
 void kiemsp();
 void xoasp();
+void kho();
 void giohang(vector<string> list);
 
 vector<string> list;
@@ -121,6 +124,9 @@ void choose_menu() {
         case 3: xoasp();
             break;
         case 4: giohang(list);
+            break;
+        case 5: kho();
+            break;
         case 6: break;
     }
 }
@@ -467,12 +473,13 @@ void findByFilter() {
     string temp;
     cout << "~~~Nhung san pham thoa man dieu kien:" << endl;
     cout << "(/ThietBi/DongSP/Mau/Ram/SoLuong)" << endl << endl;
+    //find by filter
     for (int i=1; i<count ; i++) {
         if (arr[i].find(device)!=string::npos && arr[i].find(type)!=string::npos && arr[i].find(color)!=string::npos && arr[i].find(ram)!=string::npos) {
             cout << arr[i] << endl;
         }
     }
-    delete arr;
+    delete arr;  // detele array
     clear(1);
     if (continuee()==1) {
         findByFilter();
@@ -501,7 +508,7 @@ void xoasp() {
 void deleteSeri(string* arr,int& count, string& deviceData, string& typeData, string&colorData, string& ramData){
     string str;
     string seriDelete;
-
+    // check and get seri from user
     do {
         clear(1);
         cout << "Nhap ma sp can xoa:";
@@ -536,6 +543,7 @@ void deleteSeri(string* arr,int& count, string& deviceData, string& typeData, st
         }
     }
     ofs.close();
+    // check flags
     if (flags==true) {
         cout << "~~~~~Xoa thanh cong~~~~~" << endl;
         updateJson(deviceData,typeData,colorData,ramData);
@@ -582,7 +590,6 @@ void updateJson (string& deviceData, string& typeData, string& colorData, string
 }
 
 void giohang(vector<string> list) {
-    //vector<string> list;
     int choose;
     clear(2);
     cout << "--------GIO HANG--------" << endl;
@@ -595,10 +602,11 @@ void giohang(vector<string> list) {
     if (choose==1) viewcart(list);
     if (choose==2) addcart(list);
     if (choose==3) deletecart(list);
+    if (choose==4) orderOut(list);
 }
 
 void viewcart (vector<string>& list) {
-    if (list.size()==0) {
+    if (list.size()==0) {   // check cart list is clear?
         clear(1);
         cout << "-------XEM GIO HANG-------" << endl;
         cout << "!!! Chua co SP duoc chon !!!" << endl;
@@ -606,7 +614,7 @@ void viewcart (vector<string>& list) {
         if (continuee()==1) {
             giohang(list);
         }
-    } else {
+    } else {   // if cart list not clear
         clear(1);
         cout << "-------XEM GIO HANG-------" << endl;
         cout << "Danh sach SP da chon: " << endl;
@@ -676,7 +684,7 @@ void addcart (vector<string>& list) {
         if (chooseRam==1) ram="08GB";
         if (chooseRam==2) ram="16GB";
     }
-    
+    // create string and push to cart
     string items = device + "-" + type + "-" + color + "-" + ram;
     list.push_back(items);
     clear(1);
@@ -687,23 +695,27 @@ void addcart (vector<string>& list) {
 }
 
 void deletecart (vector<string>& list) {
+    // show cart list
     clear(1);
     cout << "-------XOA SP-------" << endl;
     cout << "Danh sach SP da chon: " << endl;
     for (int i=0,count=1; i<list.size();i++,count++) {
         cout << count << ". " << list[i] << endl;
     }
+    
+    // choose device want to delete
     cout << endl << "Chon stt SP muon xoa: " << endl;
     cout << "[-1] Xoa tat ca" << endl;
     int dele;
     dele=getChoose(-1,(unsigned int)list.size());
-    if (dele==-1) {
+    if (dele==-1) {  // delete all list
         list.clear();
         cout << "~~~~~ Xoa thanh cong ~~~~~" << endl;
         if (continuee()==1) {
             giohang(list);
         }
     }
+    // delete 1 device
     list.erase(list.begin()+dele-1);
     clear(1);
     cout << "~~~~~ Xoa thanh cong ~~~~~" << endl;
@@ -712,6 +724,111 @@ void deletecart (vector<string>& list) {
     }
 }
 
-void oderOut () {
-    
+void orderOut (vector<string>& list) {
+    vector<string> order;
+
+    for (int j=0; j<list.size();j++) {
+        //get quantity in cart list
+        int count=1;
+        int quantity= stoi(list[j].substr(list[j].length()-2,1));
+        // find seri in cart list
+        ifstream ifs("/Users/macos/C++/Project/Project/seri.txt");
+        while(!ifs.eof() && count<=quantity) {
+            bool flags=false;
+            string str;
+            getline(ifs,str);
+            string seri= str.substr(0,7);
+            for (int i=0; i<7;i++) {
+                if(list[j].find(seri[i])==string::npos) {
+                    flags=true;
+                }
+            }  // add seri to order list
+            if (flags==false) {
+                order.push_back(str);
+                count++;
+            }
+        }
+        ifs.close();
+    }
+
+    string* temp = new string;
+    string line;
+    ifstream infile("/Users/macos/C++/Project/Project/seri.txt");
+    int p=0;
+    while(!infile.eof()) {
+        getline(infile,line);
+        temp[p]=line;
+        p++;
+    }
+    infile.close();
+    for (int i=0; i<order.size();i++) {
+
+        for (int j=0; j<p; j++) {
+            if (order[i]==temp[j]) {
+                temp[j]="";
+            }
+        }
+    }
+    ofstream out("/Users/macos/C++/Project/Project/seri.txt");
+    for (int i=0; i<p;i++) {
+        if (temp[i]!="") {
+            out << temp[i] << endl;
+        }
+    }
+    out.close();
+    delete temp;
+
+    string deviceData, typeData, colorData, ramData;
+    for (int i=0; i<order.size();i++) {
+        decodeSeri(order[i], deviceData, typeData, colorData, ramData);
+        updateJson(deviceData, typeData, colorData, ramData);
+    }
+}
+
+string outQuantity(string& s) {
+    string quantity="";
+    char key='/';
+    bool flag=false;
+    for (int i=(unsigned int)s.size()-1; i>=0; i--) {
+        if (s[i]!=key && flag==false) {
+            quantity+=s[i];
+        } else {
+            flag=true;
+        }
+    }
+    return quantity;
+}
+
+void kho() {
+    clear(2);
+    cout << "--------KHO HANG--------" << endl;
+    string line;
+    string str;
+    ifstream inp("/Users/macos/C++/Project/Project/textdata.txt");
+    clear(1);
+    cout << setw(17) << right << "Thong tin SP" << setw(20) << "So luong" << endl << endl;
+    for (int j=1; j<=26 ; j++) {
+        string result;
+        int count=0;
+        string quantity;
+        getline(inp,line);
+        str=line.substr(1,line.length()-1);
+        for (int i=0; i<str.length(); i++) {
+            if (count==4) {
+                result=result.erase(result.length()-1);
+                break;
+            }
+            if (str[i]!=(char)'/') {
+                result+=str[i];
+            }
+            if (str[i]==(char)'/') {
+                result+=str[i];
+                count++;
+                result=result.replace(i, i, "-");
+            }
+        }
+        quantity=outQuantity(line);
+        cout << setw(2) << right << j << ". " << result << setw(10+24-(unsigned int)result.length()) << right << quantity << endl;
+    }
+    clear(1);
 }
