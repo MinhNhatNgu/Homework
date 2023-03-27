@@ -28,6 +28,6 @@ void kho(string s) {
 }
 
 int main2() {
-    
+    string test="test github";
     return 0;
 }
