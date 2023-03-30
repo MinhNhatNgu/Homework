@@ -35,7 +35,7 @@ void updateJson (string& deviceData, string& typeData, string& colorData, string
 void viewcart (vector<string>& list);
 void addcart (vector<string>& list);
 void deletecart (vector<string>& list);
-string outQuantity(string& s);
+string outQuantity(string s);
 void orderOut (vector<string>& list);
 
 //main function
@@ -303,13 +303,11 @@ void kiemsp() {
     choose=getChoose(1, 2);
     if (choose==1) {
         clear(2);
-        cout << "-------TIM SP BANG MA-------" << endl;
         getSeriFromFile(arrSeri, countSeri);
         findBySeri(arrSeri, countSeri);
     }
     if (choose==2) {
         clear(2);
-        cout << "--------LOC SP--------" << endl;
         findByFilter();
     }
     delete arrSeri;
@@ -327,6 +325,7 @@ void getSeriFromFile (string*& arrSeri, int& countSeri) {
 }
 
 void findBySeri (string*& arrSeri, int& countSeri) {
+    cout << "-------TIM SP BANG MA-------" << endl;
     string strSeri;
     string deviceData,typeData,colorData,ramData;
     cout << "--> Nhap CHINH XAC ma san pham: ";
@@ -399,6 +398,7 @@ void textData(json& data, const string& path) {
 }
 
 void findByFilter() {
+    cout << "--------LOC SP--------" << endl;
     // get data from file textdata to array
     ifstream infile("/Users/macos/C++/Project/Project/textdata.txt");
     string* arr = new string;
@@ -431,12 +431,12 @@ void findByFilter() {
         if (chooseType==4) type="";
         clear(1);
         cout << "Chon mau:" << endl;
-        cout << "1.Black\t\t" << "2.Purple\t" << "3.White\t\t" << "4.Bo qua" << endl;
+        cout << "1.Black\t\t" << "2.White\t" << "3.Purple\t\t" << "4.Bo qua" << endl;
         cout << "[0] Tro ve menu" << endl;
         chooseColor=getChoose(1,4);
         if (chooseColor==1) color="black";
-        if (chooseColor==2) color="purple";
-        if (chooseColor==3) color="white";
+        if (chooseColor==2) color="white";
+        if (chooseColor==3) color="purple";
         if (chooseColor==4) color="";
         clear(1);
         cout << "Chon dung luong ram:" << endl;
@@ -472,15 +472,27 @@ void findByFilter() {
         if (chooseRam==3) ram="";
     }
     if (chooseDevice==3) device="";
-    clear(1);
-    string temp;
-    cout << "~~~Nhung san pham thoa man dieu kien:" << endl;
-    cout << "(/ThietBi/DongSP/Mau/Ram/SoLuong)" << endl << endl;
+    bool flags=false;
+    vector<string> listAvaiable;
+    
     //find by filter
     for (int i=0; i<count ; i++) {
-        if (arr[i].find(device)!=string::npos && arr[i].find(type)!=string::npos && arr[i].find(color)!=string::npos && arr[i].find(ram)!=string::npos) {
-            cout << arr[i] << endl;
+        if (outQuantity(arr[i])!="0") {
+            if (arr[i].find(device)!=string::npos && arr[i].find(type)!=string::npos && arr[i].find(color)!=string::npos && arr[i].find(ram)!=string::npos) {
+                listAvaiable.push_back(arr[i]);
+                flags=true;
+            }
         }
+    }
+    if (flags==true) {
+        clear(1);
+        cout << "Nhung san pham thoa man dieu kien:" << endl;
+        cout << "(/ThietBi/DongSP/Mau/Ram/SoLuong)" << endl << endl;
+        for (int i=0; i<listAvaiable.size();i++) {
+            cout << listAvaiable[i] << endl;
+        }
+    } else {
+        cout << "!!! Khong co SP nao phu hop thoa man !!!" << endl;
     }
     delete arr;  // detele array
     clear(1);
@@ -519,6 +531,16 @@ void deleteSeri(string* arr,int& count, string& deviceData, string& typeData, st
         cin >> seriDelete;
         if (seriDelete.size()<12 || seriDelete.size()>12) {
             cout << "!!! Ma SP khong ton tai !!!" << endl;
+            clear(1);
+            cout << "[Nhan bat ki] Tiep tuc" << endl;
+            cout << "[0] Tro ve menu" << endl;
+            string back;
+            cin >> back;
+            if (back=="0") {
+                clear(2);
+                menu();
+                choose_menu();
+            }
         }
     } while (seriDelete.size()<12 || seriDelete.size()>12);
     
@@ -581,7 +603,7 @@ void deleteProduct() {
     string device,type,color,ram;
     string deviceData,typeData,colorData,ramData;
     clear(1);
-    cout << "-------THEM SP-------" << endl;
+    cout << "-------XOA SP-------" << endl;
     cout << "Chon thiet bi: " << endl;
     cout << "1.IPhone\t" << "2.Macbook\t" << endl;
     cout << "[0] Tro ve menu" << endl;
@@ -598,12 +620,12 @@ void deleteProduct() {
         if (chooseType==3) type="IP13";
         clear(1);
         cout << "Chon mau:" << endl;
-        cout << "1.Black\t\t" << "2.Purple\t" << "3.White\t\t" << endl;
+        cout << "1.Black\t\t" << "2.White\t" << "3.Purple\t\t" << endl;
         cout << "[0] Tro ve menu" << endl;
         chooseColor=getChoose(1,3);
         if (chooseColor==1) color="black";
-        if (chooseColor==2) color="purple";
-        if (chooseColor==3) color="white";
+        if (chooseColor==2) color="white";
+        if (chooseColor==3) color="purple";
         clear(1);
         cout << "Chon dung luong ram:" << endl;
         cout << "1. 2GB\t\t" << "2. 4GB\t\t" << endl;
@@ -771,12 +793,12 @@ void addcart (vector<string>& list) {
         if (chooseType==3) type="IP13";
         clear(1);
         cout << "Chon mau:" << endl;
-        cout << "1.Black\t\t" << "2.Purple\t" << "3.White\t\t" << endl;
+        cout << "1.Black\t\t" << "2.White\t" << "3.Purple\t\t" << endl;
         cout << "[0] Tro ve menu" << endl;
         chooseColor=getChoose(1,3);
         if (chooseColor==1) color="black";
-        if (chooseColor==2) color="purple";
-        if (chooseColor==3) color="white";
+        if (chooseColor==2) color="white";
+        if (chooseColor==3) color="purple";
         clear(1);
         cout << "Chon dung luong ram:" << endl;
         cout << "1. 2GB\t\t" << "2. 4GB\t\t" << endl;
@@ -992,14 +1014,16 @@ void orderOut (vector<string>& list) {
     }
 }
 
-string outQuantity(string& s) {
+string outQuantity(string s) {
     // function get quantity from string ( info device )
     string quantity="";
     string p="0123456789";
-    s=s.substr(s.length()-4,4);
-    for (int i=0; i<s.size();i++) {
-        if (p.find(s[i])!=string::npos) {
-            quantity+=s[i];
+    if (s!="") {
+        s=s.substr(s.length()-4,4);
+        for (int i=0; i<s.size();i++) {
+            if (p.find(s[i])!=string::npos) {
+                quantity+=s[i];
+            }
         }
     }
     return quantity;
@@ -1038,4 +1062,12 @@ void kho() {
         cout << setw(2) << right << j << ". " << result << setw(10+24-(unsigned int)result.length()) << right << quantity << endl;
     }
     clear(1);
+    cout << "[Nhan bat ki] Tro lai menu" << endl;
+    string hold;
+    cin >> hold;
+    if (hold!="") {
+        clear(2);
+        menu();
+        choose_menu();
+    }
 }
